@@ -167,22 +167,34 @@ cm3 <- confusionMatrix(p3, test1$classe)
 ```
 
 ```{r}
-cat('----------------------------------\n
-Prediction Outcomes\n\n
-***** Random Forest\n\n')
+##################### PREDICTION OUTCOMES
+
+## Random Forest
 print(cm1$table)
 print(cm1$overall)
-cat('\n\n*****  Stochastic Gradient Boosting\n\n')
+
+## Stochastic Gradient Boosting
 print(cm2$table)
 print(cm2$overall)
-cat('\n\n***** K-nearest neighbours\n\n')
+
+## K-nearest neighbours
 print(cm3$table)
 print(cm3$overall)
 ```
 
+
 ### Conclusions
 
-The simplest model, K-nearest neighbours does quite well with approximately 77.5% accuracy. However, both the stochastic gradient boosting and the random forest predictions are far better with an incredible 1 and 0 prediction errors, respectively.
+The simplest model, K-nearest neighbours does quite well with approximately 92.1% accuracy. However, both the stochastic gradient boosting and the random forest predictions are far better with accuracies of 98.6% and 99.8%, respectively.
 
 It is clear that there are enough differences in the data that categorizing the different exercise types is quite easy. Since the random forest worked best, we will use this method for the final prediction. 
+
+
+```{r}
+# Predicting the true test-set using RF.
+pred <- predict(mod1, testing)
+finalPred <- data.frame(testing$problem_id, pred)
+names(finalPred) <- c("problem_id", "Prediction")
+print(finalPred)
+```
 

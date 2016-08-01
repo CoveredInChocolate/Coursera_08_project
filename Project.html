@@ -259,66 +259,80 @@ if(!exists('p1')) {
 cm1 &lt;- confusionMatrix(p1, test1$classe)
 cm2 &lt;- confusionMatrix(p2, test1$classe)
 cm3 &lt;- confusionMatrix(p3, test1$classe)</code></pre>
-<pre class="r"><code>cat('----------------------------------\n
-Prediction Outcomes\n\n
-***** Random Forest\n\n')</code></pre>
-<pre><code>## ----------------------------------
-## 
-## Prediction Outcomes
-## 
-## 
-## ***** Random Forest</code></pre>
-<pre class="r"><code>print(cm1$table)</code></pre>
+<pre class="r"><code>##################### PREDICTION OUTCOMES
+
+## Random Forest
+print(cm1$table)</code></pre>
 <pre><code>##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1116    0    0    0    0
-##          B    0  759    0    0    0
-##          C    0    0  684    0    0
-##          D    0    0    0  643    0
+##          A 1115    1    0    0    0
+##          B    1  758    0    0    0
+##          C    0    0  684    3    0
+##          D    0    0    0  640    0
 ##          E    0    0    0    0  721</code></pre>
 <pre class="r"><code>print(cm1$overall)</code></pre>
 <pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
-##      1.0000000      1.0000000      0.9990601      1.0000000      0.2844762 
+##      0.9987255      0.9983879      0.9970282      0.9995860      0.2844762 
 ## AccuracyPValue  McnemarPValue 
 ##      0.0000000            NaN</code></pre>
-<pre class="r"><code>cat('\n\n*****  Stochastic Gradient Boosting\n\n')</code></pre>
-<pre><code>## 
-## 
-## *****  Stochastic Gradient Boosting</code></pre>
-<pre class="r"><code>print(cm2$table)</code></pre>
+<pre class="r"><code>## Stochastic Gradient Boosting
+print(cm2$table)</code></pre>
 <pre><code>##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1116    0    0    0    0
-##          B    0  759    0    0    0
-##          C    0    0  684    0    0
-##          D    0    0    0  642    0
-##          E    0    0    0    1  721</code></pre>
+##          A 1115   16    0    0    0
+##          B    1  737    3    0    5
+##          C    0    6  677    9    2
+##          D    0    0    4  634    6
+##          E    0    0    0    0  708</code></pre>
 <pre class="r"><code>print(cm2$overall)</code></pre>
 <pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
-##      0.9997451      0.9996776      0.9985806      0.9999935      0.2844762 
+##      0.9867448      0.9832271      0.9826536      0.9900850      0.2844762 
 ## AccuracyPValue  McnemarPValue 
 ##      0.0000000            NaN</code></pre>
-<pre class="r"><code>cat('\n\n***** K-nearest neighbours\n\n')</code></pre>
-<pre><code>## 
-## 
-## ***** K-nearest neighbours</code></pre>
-<pre class="r"><code>print(cm3$table)</code></pre>
+<pre class="r"><code>## K-nearest neighbours
+print(cm3$table)</code></pre>
 <pre><code>##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1018   92    1    0    0
-##          B   95  557   90    2    0
-##          C    3  109  461  114    1
-##          D    0    1  131  407  122
-##          E    0    0    1  120  598</code></pre>
+##          A 1084   37    4    3    6
+##          B   11  658   20    8   14
+##          C   11   35  629   37   10
+##          D   10   18   26  584   32
+##          E    0   11    5   11  659</code></pre>
 <pre class="r"><code>print(cm3$overall)</code></pre>
 <pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
-##      0.7751721      0.7157186      0.7617786      0.7881544      0.2844762 
+##   9.212337e-01   9.003568e-01   9.123594e-01   9.294744e-01   2.844762e-01 
 ## AccuracyPValue  McnemarPValue 
-##      0.0000000            NaN</code></pre>
+##   0.000000e+00   3.650738e-07</code></pre>
 <div id="conclusions" class="section level3">
 <h3>Conclusions</h3>
-<p>The simplest model, K-nearest neighbours does quite well with approximately 77.5% accuracy. However, both the stochastic gradient boosting and the random forest predictions are far better with an incredible 1 and 0 prediction errors, respectively.</p>
+<p>The simplest model, K-nearest neighbours does quite well with approximately 92.1% accuracy. However, both the stochastic gradient boosting and the random forest predictions are far better with accuracies of 98.6% and 99.8%, respectively.</p>
 <p>It is clear that there are enough differences in the data that categorizing the different exercise types is quite easy. Since the random forest worked best, we will use this method for the final prediction.</p>
+<pre class="r"><code># Predicting the true test-set using RF.
+pred &lt;- predict(mod1, testing)
+finalPred &lt;- data.frame(testing$problem_id, pred)
+names(finalPred) &lt;- c(&quot;problem_id&quot;, &quot;Prediction&quot;)
+print(finalPred)</code></pre>
+<pre><code>##    problem_id Prediction
+## 1           1          B
+## 2           2          A
+## 3           3          B
+## 4           4          A
+## 5           5          A
+## 6           6          E
+## 7           7          D
+## 8           8          B
+## 9           9          A
+## 10         10          A
+## 11         11          B
+## 12         12          C
+## 13         13          B
+## 14         14          A
+## 15         15          E
+## 16         16          E
+## 17         17          A
+## 18         18          B
+## 19         19          B
+## 20         20          B</code></pre>
 </div>
 </div>
 
