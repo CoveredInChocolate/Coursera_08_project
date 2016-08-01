@@ -1,0 +1,201 @@
+---
+title: "Practical Machine Learning Project"
+subtitle: "July 31, 2016 - Sindre Froyn"
+output: html_document
+---
+
+
+# Introduction
+
+Six participants were asked to do various barbell lifts in 5 different ways, both correctly and incorrectly. They were equipped with accelerometers on the belt, forearm, arm and on the dumbell.
+
+We are going to see if we can predict what kind of exercise they were doing based on the measurements that are available to us. A possible real world application of this would be to make a gym suit and training equipment that tells you when you are doing something wrong.
+
+We will use machine learning algorithms to predict the type of training that was done.
+
+Data provided by http://groupware.les.inf.puc-rio.br/har
+
+Required libraries.
+```{r, results="hide", message=FALSE,  warning=FALSE, error=FALSE}
+require(ggplot2)
+require(plyr);
+require(dplyr)
+require(caret)
+require(kernlab)
+require(randomForest);
+require(gbm);
+require(splines);
+require(parallel)
+```
+
+# Retrieving and Preparing the data
+
+If the files can't be found in the working directory, they are automatically downloaded from the source and written to the appropriate CSV-files.
+
+```{r}
+# Setting working directory and retrieving data
+setwd('C:\\R\\Coursera\\8_PracticalMachineLearning\\Project')
+
+if(!file.exists('train.csv')) {
+    download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv',
+                  'train.csv')
+}
+if(!file.exists('test.csv')) {
+    download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv',
+                  'test.csv')
+}
+```
+
+After some data exploration that is not included in this report, it was discovered that many of the 160 variables included in the data were of very poor quality. Of the 19.622 records of data, many columns had NULL or missing values in over 19.000 records. These were filtered out.
+
+```{r}
+if(!exists('training')) { 
+    training_raw <- read.csv('train.csv')
+    testing_raw <- read.csv('test.csv')
+    
+    # -- Cleaning Data
+    # Removing NA/missing-columns when there are more than 19.000
+    lna <- sapply(training_raw, function(x)sum(is.na(x)))
+    lna_index <- lna < 19000
+    training2 <- training_raw[lna_index]
+    
+    lnm <- sapply(training2, function(x)sum(x == ""))
+    lnm_index <- lnm < 19000
+    training <- training2[lnm_index]
+    
+    # Applying same column selection to test data
+    nm <- names(training)
+    nm[60] <- "problem_id"
+    testing <- testing_raw[,colnames(testing_raw) %in% nm]
+}
+
+```
+
+# Cross Validation
+
+In order to check the validity of our machine learning predictions, we do cross validation. In this case we split the data into a sub test/training set, with a 20/80 split. We build our model on the sub-train set and check the accuracy on the sub-test set.
+
+We choose a random partition of the data, and check that the distribution of the different classes are roughly uniform.
+
+```{r}
+set.seed(27865)
+inTrain <- createDataPartition(y=training$classe,
+                               p = 0.8, list=FALSE)
+train1 <- training[inTrain,]
+test1 <- training[-inTrain,]
+table(train1$classe)
+table(test1$classe)
+```
+
+# Building Models
+
+This is a classification problem, as we need to classify what type of training was performed (the `classe` variable). Three popular classification models were chosen quite arbitrarily.
+
+The model building took a significant amount of time, so they were stored as R-objects to save time on rerunning the code.
+
+### Model 1 - Random Forest
+
+```{r}
+# Random Forest
+if(!file.exists('mod1.rda')) { 
+    cat('Training mod1.\n')
+    print(Sys.time())
+    mod1 <- train(classe ~ .,
+                  method="rf",
+                  data=train1)
+    print(Sys.time())
+    save(mod1, file="mod1.rda")
+} else {
+    cat('Loading mod1.\n')
+    load("mod1.rda")
+}
+```
+
+
+### Model 2 - Stochastic Gradient Boosting
+
+```{r}
+# Stochastic Gradient Booster
+if(!file.exists('mod2.rda')) { 
+    cat('Training mod2.\n')
+    print(Sys.time())
+    mod2 <- train(classe ~ .,
+                  method="gbm",
+                  data=train1)
+    print(Sys.time())
+    save(mod2, file="mod2.rda")
+} else {
+    cat('Loading mod2.\n')
+    load("mod2.rda")
+}
+```
+
+
+### Model 3 - K-nearest Neighbours
+
+```{r}
+# K-nearest neighbours
+if(!file.exists('mod3.rda')) { 
+    cat('Training mod3.\n')
+    print(Sys.time())
+    mod3 <- train(classe ~ .,
+                  method="knn",
+                  data=train1)
+    print(Sys.time())
+    save(mod3, file="mod3.rda")
+} else {
+    cat('Loading mod3.\n')
+    load("mod3.rda")
+}
+```
+
+# Model Accuracy
+
+Now that the models are done, we can do the predictions to see how effective each of them are.
+
+```{r}
+# Running predictions and evaluating the confusion matrix
+if(!exists('p1')) { 
+    p1 <- predict(mod1, test1)
+    p2 <- predict(mod2, test1)
+    p3 <- predict(mod3, test1)
+}
+
+cm1 <- confusionMatrix(p1, test1$classe)
+cm2 <- confusionMatrix(p2, test1$classe)
+cm3 <- confusionMatrix(p3, test1$classe)
+```
+
+```{r}
+cat('----------------------------------\n
+Prediction Outcomes\n\n
+***** Random Forest\n\n')
+print(cm1$table)
+print(cm1$overall)
+cat('\n\n*****  Stochastic Gradient Boosting\n\n')
+print(cm2$table)
+print(cm2$overall)
+cat('\n\n***** K-nearest neighbours\n\n')
+print(cm3$table)
+print(cm3$overall)
+```
+
+### Conclusions
+
+The simplest model, K-nearest neighbours does quite well with approximately 77.5% accuracy. However, both the stochastic gradient boosting and the random forest predictions are far better with an incredible 1 and 0 prediction errors, respectively.
+
+It is clear that there are enough differences in the data that categorizing the different exercise types is quite easy. Since the random forest worked best, we will use this method for the final prediction. 
+
+# Final Prediction
+
+We apply the random forest on the true test set. Our predictions indicate that all training types in the test set is of type A.
+
+```{r}
+# Predicting the true test-set using RF.
+pred <- predict(mod1, testing)
+finalPred <- data.frame(testing$problem_id, pred)
+names(finalPred) <- c("problem_id", "Prediction")
+print(finalPred)
+```
+
+
