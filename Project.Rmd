@@ -186,16 +186,3 @@ The simplest model, K-nearest neighbours does quite well with approximately 77.5
 
 It is clear that there are enough differences in the data that categorizing the different exercise types is quite easy. Since the random forest worked best, we will use this method for the final prediction. 
 
-# Final Prediction
-
-We apply the random forest on the true test set. Our predictions indicate that all training types in the test set is of type A.
-
-```{r}
-# Predicting the true test-set using RF.
-pred <- predict(mod1, testing)
-finalPred <- data.frame(testing$problem_id, pred)
-names(finalPred) <- c("problem_id", "Prediction")
-print(finalPred)
-```
-
-

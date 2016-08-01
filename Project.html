@@ -321,36 +321,6 @@ Prediction Outcomes\n\n
 <p>It is clear that there are enough differences in the data that categorizing the different exercise types is quite easy. Since the random forest worked best, we will use this method for the final prediction.</p>
 </div>
 </div>
-<div id="final-prediction" class="section level1">
-<h1>Final Prediction</h1>
-<p>We apply the random forest on the true test set. Our predictions indicate that all training types in the test set is of type A.</p>
-<pre class="r"><code># Predicting the true test-set using RF.
-pred &lt;- predict(mod1, testing)
-finalPred &lt;- data.frame(testing$problem_id, pred)
-names(finalPred) &lt;- c(&quot;problem_id&quot;, &quot;Prediction&quot;)
-print(finalPred)</code></pre>
-<pre><code>##    problem_id Prediction
-## 1           1          A
-## 2           2          A
-## 3           3          A
-## 4           4          A
-## 5           5          A
-## 6           6          A
-## 7           7          A
-## 8           8          A
-## 9           9          A
-## 10         10          A
-## 11         11          A
-## 12         12          A
-## 13         13          A
-## 14         14          A
-## 15         15          A
-## 16         16          A
-## 17         17          A
-## 18         18          A
-## 19         19          A
-## 20         20          A</code></pre>
-</div>
 
 
 
