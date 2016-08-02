@@ -63,9 +63,12 @@ if(!exists('training')) {
     lnm_index <- lnm < 19000
     training <- training2[lnm_index]
     
+    # Remove X, user_name and timestamps
+    training <- training[-c(1:5)]
+    
     # Applying same column selection to test data
     nm <- names(training)
-    nm[60] <- "problem_id"
+    nm[ncol(training)] <- "problem_id"
     testing <- testing_raw[,colnames(testing_raw) %in% nm]
 }
 

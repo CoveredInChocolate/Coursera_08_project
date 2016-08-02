@@ -166,9 +166,12 @@ if(!file.exists('test.csv')) {
     lnm_index &lt;- lnm &lt; 19000
     training &lt;- training2[lnm_index]
     
+    # Remove X, user_name and timestamps
+    training &lt;- training[-c(1:5)]
+    
     # Applying same column selection to test data
     nm &lt;- names(training)
-    nm[60] &lt;- &quot;problem_id&quot;
+    nm[ncol(training)] &lt;- &quot;problem_id&quot;
     testing &lt;- testing_raw[,colnames(testing_raw) %in% nm]
 }</code></pre>
 </div>
